@@ -32,13 +32,18 @@ public class PrectiCSV {
                 }
                 if (radek.length > 6 && radek[6] != null && !radek[6].isEmpty()) {
                     try {
-                        String[] koordinaty = radek[6].split("[/(\\d{2}\\°\\d{1,2}\\'\\d{1,2}\\.\\d{3}\\\"\\w{1})\\s(\\d{2}\\°\\d{1,2}\\'\\d{1,2}\\.\\d{3}\\\"\\w{1})/gm]");
-                        if (koordinaty.length >= 3) {
-                            double stupne = Double.parseDouble(koordinaty[0]);
-                            double minuty = Double.parseDouble(koordinaty[1]);
-                            double sekundy = Double.parseDouble(koordinaty[2]);
+                        // Nejprve potřebuji souřadnice rozdělit na lat a long. Odděluje je mezera to je ten první split. Teoreticky bych to ohl udělat celé najednou ale...
+                        String[] lat_long = radek[6].split(" ");
+                        // Pak už vezmu tu jednu část a z ní vyparsuju jednotlivé komponenty. POZOR pro W a S je třeba vynásobit -1, ale jelikož jsme na severní polokouli tak asi dobrý
+                        String[] koordinaty = lat_long[0].split("[°'\"]");
+                        // mít tady >=  je špatně. Je jen jeden správný formát souřadnic, která skončí rozdělení na přesně 6 pložek. Ten split to nedělí 100% ale funguje to :)
+                        if (koordinaty.length == 6) {
+                            double stupne = Double.parseDouble(koordinaty[1]);
+                            double minuty = Double.parseDouble(koordinaty[2]);
+                            double sekundy = Double.parseDouble(koordinaty[3]);
 
                             double desetinneStupne = stupne + (minuty / 60.0) + (sekundy / 3600.0);
+                            // teď je upravena polovina souřadnic, takže teď ještě druhá. To jsme ti už nepsal. Doporučuji to přepsat do metody co budu volat. Ale nechám na tobě
                             System.out.println("Souřadnice úspěšně upraveny: " + desetinneStupne);
                         } else {
                             System.out.println("Špatný formát souřadnic.");
