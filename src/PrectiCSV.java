@@ -1,7 +1,9 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PrectiCSV {
@@ -34,18 +36,19 @@ public class PrectiCSV {
             return;
         }
 
-        System.out.println("Informace z řádku:");
-        for (String hodnota : radek) {
-            System.out.println(hodnota);
-        }
-
-        if (radek.length <= 6) {
+        if (radek.length <= 6 || radek[6].isEmpty()) {
             System.out.println("Tento řádek nemá uvedenou GPS.");
             return;
         }
 
+        String souradnice = radek[6];
+        if (!souradnice.contains("°") || !souradnice.contains("'") || !souradnice.contains("\"")) {
+            System.out.println("Neplatný formát souřadnic: " + souradnice);
+            return;
+        }
+
         try {
-            String[] latLong = radek[6].split(" ");
+            String[] latLong = souradnice.split(" ");
             if (latLong.length != 2) {
                 System.out.println("Špatný formát souřadnic.");
                 return;
@@ -54,13 +57,17 @@ public class PrectiCSV {
             double latitude = prevedSouradnice(latLong[0]);
             double longitude = prevedSouradnice(latLong[1]);
 
-            System.out.printf("Převedené souřadnice: " + latitude + "N, " + longitude + "E " + "\n");
+            System.out.printf("Převedené souřadnice: " + latitude + "N, " + longitude + "E ");
+            String[] novyRadek = Arrays.copyOf(radek, radek.length + 1);
+            novyRadek[radek.length] = latitude + "," + longitude;
+            data.set(indexRadku, novyRadek);
         } catch (NumberFormatException e) {
             System.out.println("Chyba při převodu souřadnic: " + e.getMessage());
         }
     }
 
     private static double prevedSouradnice(String souradnice) {
+        souradnice = souradnice.replace("\"", ""); // Odstranit uvozovky
         String[] koordinaty = souradnice.split("[°'\"]");
         if (koordinaty.length == 6) {
             try {
@@ -73,6 +80,22 @@ public class PrectiCSV {
             }
         } else {
             return Double.NaN;
+        }
+    }
+
+    public static void ulozCSV(List<String[]> data, String cesta) {
+        try (FileWriter writer = new FileWriter(cesta)) {
+            for (String[] radek : data) {
+                for (int i = 0; i < radek.length; i++) {
+                    writer.append(radek[i]);
+                    if (i < radek.length - 1) {
+                        writer.append(";");
+                    }
+                }
+                writer.append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
