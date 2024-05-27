@@ -57,7 +57,7 @@ public class PrectiCSV {
             double latitude = prevedSouradnice(latLong[0]);
             double longitude = prevedSouradnice(latLong[1]);
 
-            System.out.printf("Převedené souřadnice: " + latitude + "N, " + longitude + "E ");
+            System.out.println("Převedené souřadnice: " + latitude + "N, " + longitude + "E ");
             String[] novyRadek = Arrays.copyOf(radek, radek.length + 1);
             novyRadek[radek.length] = latitude + "," + longitude;
             data.set(indexRadku, novyRadek);
@@ -68,12 +68,12 @@ public class PrectiCSV {
 
     private static double prevedSouradnice(String souradnice) {
         souradnice = souradnice.replace("\"", ""); // Odstranit uvozovky
-        String[] koordinaty = souradnice.split("[°'\"]");
-        if (koordinaty.length == 6) {
+        String[] koordinaty = souradnice.split("[°'\".]"); // na konec reguláku přidána tečka, což je match jakéhokoliv jednoho charakteru, v našem případě N nebo E
+        if (koordinaty.length == 4) { // pokud je souřadnice dobře, tak mám přesně 4 prvky v poli. stupne, minuty, sekundy, a N|E
             try {
-                double stupne = Double.parseDouble(koordinaty[1]);
-                double minuty = Double.parseDouble(koordinaty[2]);
-                double sekundy = Double.parseDouble(koordinaty[3]);
+                double stupne = Double.parseDouble(koordinaty[0]);
+                double minuty = Double.parseDouble(koordinaty[1]);
+                double sekundy = Double.parseDouble(koordinaty[2]);
                 return stupne + (minuty / 60.0) + (sekundy / 3600.0);
             } catch (NumberFormatException e) {
                 throw new NumberFormatException("Chyba při převodu: " + e.getMessage());
